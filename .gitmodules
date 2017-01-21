@@ -1,3 +1,6 @@
 [submodule "motion_tracking"]
 	path = motion_tracking
 	url = https://github.com/dereks/motion_tracking.git
+[submodule "socHACKi"]
+	path = socHACKi
+	url = https://github.com/jsochacki/socHACKi.git
