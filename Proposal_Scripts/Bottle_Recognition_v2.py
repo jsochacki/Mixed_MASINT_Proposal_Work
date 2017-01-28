@@ -11,7 +11,7 @@ os.chdir('/root/base/development/MASINT_Proposal_Work/Proposal_Scripts')
 import cv2
 
 # load the image_1 and convert it to grayscale
-template_name = 'Bottle_Template2.jpg'
+template_name = 'Bottle_Template.jpg'
 file_path = '/root/base/development/MASINT_Proposal_Work'\
             '/Media_Files/Initial/Bottle/'
 jpg_files = os.listdir(file_path)
@@ -44,33 +44,32 @@ for ImageFile in jpg_files:
 # %%
 template_image_width, template_image_height = template_image[0][0].shape[-2::-1]
 # %%
-for ImageNumber, RGBImage, GrayImage in images:
-    # print(ImageNumber)
-    result = cv2.matchTemplate(images[ImageNumber][2],
-                               template_image[0][1],
-                               cv2.TM_CCOEFF_NORMED)
-    threshold = 0.3
-    row_locations = []
-    column_locations = []
-    points = []
-    for Row, RowValue in enumerate(result):
-        for Column, Value in enumerate(RowValue):
-            if Value >= threshold:
-                row_locations.extend([Row])
-                column_locations.extend([Column])
-                points.append([Column, Row])
-    locations = (row_locations, column_locations)
-    #locations = np.where(result >= threshold)
-    #points = zip(*locations[::-1])
-    for point in points:
-        cv2.rectangle(images[ImageNumber][1],
-                      tuple(point),
-                      (point[0]+int(template_image_width/2),
-                       point[1]+int(template_image_height/2)),
-                       (0, 0, 255),
-                       1)
+methods = ['cv2.TM_CCOEFF',
+           'cv2.TM_CCOEFF_NORMED',
+           'cv2.TM_CCORR',
+           'cv2.TM_CCORR_NORMED',
+           'cv2.TM_SQDIFF',
+           'cv2.TM_SQDIFF_NORMED']
+method = eval(methods[2])
+#for ImageNumber, RGBImage, GrayImage in images:
+images = images[0]
+ImageNumber, RGBImage, GrayImage = images
+result = cv2.matchTemplate(images[2], template_image[0][1], cv2.TM_CCOEFF_NORMED)
+min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+    top_left = min_loc
+else:
+    top_left = max_loc
+    bottom_right = (top_left[0] + template_image_width,
+                    top_left[1] + template_image_height)
 
-    cv2.imshow(str(ImageNumber), images[ImageNumber][1])
+cv2.rectangle(images[1],
+              top_left,
+              bottom_right,
+              (0, 0, 255),
+               2)
+
+cv2.imshow(str(ImageNumber), images[1])
 # %%
 image_1 = cv2.imread("0020.jpg")
 image_2 = cv2.imread("0021.jpg")
