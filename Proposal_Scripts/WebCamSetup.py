@@ -63,7 +63,7 @@ import os
 
 #os.chdir('MASINT_Proposal_Work/Media_Files/Initial/Video/')
 
-#camera = cv2.VideoCapture('0016.mp4')
+#camera = cv2.VideoCapture('./0016.mp4')
 camera = cv2.VideoCapture(0)
 camera.get(cv2.CAP_PROP_GUID)
 camera.get(cv2.CAP_PROP_CONVERT_RGB)
@@ -77,9 +77,9 @@ def decode_fourcc(v):
 
 fourcctext = decode_fourcc(camera.get(cv2.CAP_PROP_FOURCC))
 fourccfloat = cv2.VideoWriter_fourcc(*fourcctext)
-#out = cv2.VideoWriter('./output.avi',fourccfloat, 10.0, (640,480), isColor=True)
-fourccfloat = cv2.VideoWriter_fourcc(*'x264')
-out = cv2.VideoWriter('./output.mp4',fourccfloat, 30.0, (640,480), isColor=True)
+out = cv2.VideoWriter('./output.avi',fourccfloat, 10.0, (640,480), isColor=True)
+#fourccfloat = cv2.VideoWriter_fourcc(*'x264')
+#out = cv2.VideoWriter('./output.mp4',fourccfloat, 30.0, (640,480), isColor=True)
 print(out.isOpened())
 while(camera.isOpened()): # and success):
     ret, inframe = camera.read()
@@ -97,3 +97,49 @@ out.release()
 del out
 del camera
 cv2.destroyAllWindows()
+# %%
+%%bash
+ffmpeg -i ./output.avi -r 25 -pix_fmt yuv420p -strict -2 -acodec aac -b:a 128k -vcodec libx264 -crf 21 -rc-lookahead 250 ./output.mp4
+# Convert to mp4 for viewing on other computer like windows
+# %%
+%%bash
+ffmpeg -i ./0016.mp4 -c:v mjpeg -q:v 3 -an ./output2.avi
+# Take video recorded in windows in mp4 format and make it a mjpeg format for
+# OpenCV processing
+# %%
+#!/root/base/anaconda4p2/bin/python3
+
+import cv2
+import os
+
+#os.chdir('MASINT_Proposal_Work/Media_Files/Initial/Video/')
+
+camera = cv2.VideoCapture('./output2.avi')
+camera.set(cv2.CAP_PROP_FPS, 30)
+fourcctext = decode_fourcc(camera.get(cv2.CAP_PROP_FOURCC))
+#fourccfloat = cv2.VideoWriter_fourcc(*fourcctext)
+#out = cv2.VideoWriter('./output.avi',fourccfloat, 10.0, (640,480), isColor=True)
+#print(out.isOpened())
+while(camera.isOpened()): # and success):
+    ret, inframe = camera.read()
+    if ret==True:
+        #frame = cv2.flip(frame,0)
+        # write the flipped frame
+        cv2.imshow('frame',inframe)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    else:
+        break
+camera.release()
+del camera
+cv2.destroyAllWindows()
+# %%
+#!/root/base/anaconda4p2/bin/python3
+import imutils
+from imutils.video import VideoStream
+import cv2
+import os
+
+#os.chdir('MASINT_Proposal_Work/Media_Files/Initial/Video/')
+vs = VideoStream(0).start()
+time.sleep(2.0)
