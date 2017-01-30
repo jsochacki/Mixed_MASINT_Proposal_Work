@@ -4,3 +4,6 @@
 [submodule "socHACKi"]
 	path = socHACKi
 	url = https://github.com/jsochacki/socHACKi.git
+[submodule "python-v4l2capture"]
+	path = python-v4l2capture
+	url = https://github.com/gebart/python-v4l2capture.git

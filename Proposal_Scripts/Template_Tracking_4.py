@@ -6,13 +6,15 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # %%
+os.chdir('/root/base/development/MASINT_Proposal_Work/Media_Files/Initial/Video/')
+# %%
 %%bash
 cp /mnt/hgfs/BHD/L64/Source_Files/Video/* ./
 # %%
 input_video_file_name = 'Final_In'
 temporary_file_extension = '_Temporary_File.avi'
 output_video_file_name = 'Final_Out'
-script_name = 'Color_Tracking_2.py'
+script_name = 'Template_Tracking_4.py'
 # %%
 %%bash -s $input_video_file_name $temporary_file_extension
 #echo ${1::-4}
@@ -26,7 +28,7 @@ def decode_fourcc(v):
 # %%
     
 step = 'OFF'
-template_name = 'Bottle.jpg'
+template_name = 'cup.jpg'
 template = cv2.imread(template_name, 1)
 template_gray = cv2.imread(template_name, 0)
 template_scale = 1
@@ -75,7 +77,8 @@ while(camera.isOpened()): # and success):
         # inframe = cv2.flip(inframe,0)
         image = inframe.copy()
         method = eval(meth)
-        scale_values = [value/20 for value in range(20, 0, -1)]
+        #scale_values = [value/20 for value in range(20, 0, -1)]
+        scale_values = [1]
         current_local_value = None
         for Test, scale in enumerate(scale_values):
             img = image.copy()
@@ -96,7 +99,7 @@ while(camera.isOpened()): # and success):
             else:
                 local_loc = max_loc
                 local_value = max_val
-                if Test > StartLevel and (current_local_value is None or \
+                if (current_local_value is None or \
                     local_value > current_local_value[0]):
                     current_local_value = (local_value, local_loc, scale)
             # for visualization
@@ -142,4 +145,10 @@ ffmpeg -i ./$1$2 -r 25 -pix_fmt yuv420p -strict -2 -acodec aac -b:a 128k -vcodec
 # %%
 %%bash
 cp * /mnt/hgfs/BHD/L64/Source_Files/Video/
+
+# %%
+os.chdir('/root/base/development/MASINT_Proposal_Work/Proposal_Scripts')
+# %%
+%%bash -s $script_name
+cp ./$1 /mnt/hgfs/BHD/L64/Source_Files/Video/
 # Convert to mp4 for viewing on other computer like windows

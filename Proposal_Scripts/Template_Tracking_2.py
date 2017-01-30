@@ -6,13 +6,15 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # %%
+os.chdir('/root/base/development/MASINT_Proposal_Work/Media_Files/Initial/Video/')
+# %%
 %%bash
 cp /mnt/hgfs/BHD/L64/Source_Files/Video/* ./
 # %%
 input_video_file_name = 'Final_In'
 temporary_file_extension = '_Temporary_File.avi'
 output_video_file_name = 'Final_Out'
-script_name = 'Color_Tracking_2.py'
+script_name = 'Template_Tracking_2.py'
 # %%
 %%bash -s $input_video_file_name $temporary_file_extension
 #echo ${1::-4}
@@ -26,7 +28,7 @@ def decode_fourcc(v):
 # %%
     
 step = 'OFF'
-template_name = 'Bottle.jpg'
+template_name = 'cup.jpg'
 template = cv2.imread(template_name, 1)
 template_gray = cv2.imread(template_name, 0)
 template_scale = 1
@@ -142,4 +144,10 @@ ffmpeg -i ./$1$2 -r 25 -pix_fmt yuv420p -strict -2 -acodec aac -b:a 128k -vcodec
 # %%
 %%bash
 cp * /mnt/hgfs/BHD/L64/Source_Files/Video/
+
+# %%
+os.chdir('/root/base/development/MASINT_Proposal_Work/Proposal_Scripts')
+# %%
+%%bash -s $script_name
+cp ./$1 /mnt/hgfs/BHD/L64/Source_Files/Video/
 # Convert to mp4 for viewing on other computer like windows
