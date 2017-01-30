@@ -36,13 +36,6 @@ def merge_collided_bboxes( bbox_list ):
 			# Assume a collision to start out with:
 			has_collision = True
 			
-			# These coords are in screen coords, so > means 
-			# "lower than" and "further right than".  And < 
-			# means "higher than" and "further left than".
-			
-			# We also inflate the box size by 10% to deal with
-			# fuzziness in the data.  (Without this, there are many times a bbox
-			# is short of overlap by just one or two pixels.)
 			if (this_bbox[bottom][0]*1.1 < other_bbox[top][0]*0.9): has_collision = False
 			if (this_bbox[top][0]*.9 > other_bbox[bottom][0]*1.1): has_collision = False
 			
@@ -65,77 +58,38 @@ def merge_collided_bboxes( bbox_list ):
 				# Start over with the new list:
 				return merge_collided_bboxes( bbox_list )
 	
-	# When there are no collions between boxes, return that list:
 	return bbox_list
-
 
 def detect_faces( image, haar_cascade, mem_storage ):
 
-	faces = []
-	image_size = cv2.GetSize( image )
-	faces = cv2.HaarDetectObjects(image, haar_cascade, mem_storage, 1.2, 2, cv2.CV_HAAR_DO_CANNY_PRUNING, ( image_size[0]/10, image_size[1]/10) )
+    faces = []
+    image_size = cv2.GetSize( image )
+    faces = cv2.HaarDetectObjects(image, haar_cascade, mem_storage, 1.2, 2, cv2.CV_HAAR_DO_CANNY_PRUNING, ( image_size[0]/10, image_size[1]/10) )
 	
-	for face in faces:
-		box = face[0]
-		cv2.Rectangle(image, ( box[0], box[1] ),
-			( box[0] + box[2], box[1] + box[3]), cv2.RGB(255, 0, 0), 1, 8, 0)
-
+    for face in faces:
+        box = face[0]
+        cv2.Rectangle(image, ( box[0], box[1] ),
+             ( box[0] + box[2], box[1] + box[3]), cv2.RGB(255, 0, 0), 1, 8, 0)
 
 class Target:
 	def __init__(self):
-		
-		if len( sys.argv ) > 1:
-			self.writer = None
-			self.capture = cv2.CaptureFromFile( sys.argv[1] )
-			frame = cv2.QueryFrame(self.capture)
-			frame_size = cv2.GetSize(frame)
-		else:
-			fps=15
-			is_color = True
-
-			self.capture = cv2.CaptureFromCAM(0)
-			#cv2.SetCaptureProperty( self.capture, cv2.CV_CAP_PROP_FRAME_WIDTH, 640 );
-			#cv2.SetCaptureProperty( self.capture, cv2.CV_CAP_PROP_FRAME_HEIGHT, 480 );
-			cv2.SetCaptureProperty( self.capture, cv2.CV_CAP_PROP_FRAME_WIDTH, 320 );
-			cv2.SetCaptureProperty( self.capture, cv2.CV_CAP_PROP_FRAME_HEIGHT, 240 );
-			frame = cv2.QueryFrame(self.capture)
-			frame_size = cv2.GetSize(frame)
-			
-			self.writer = None
-			#self.writer = cv2.CreateVideoWriter("/dev/shm/test1.mp4", cv2.CV_FOURCC('D', 'I', 'V', 'X'), fps, frame_size, is_color )
-			#self.writer = cv2.CreateVideoWriter("test2.mpg", cv2.CV_FOURCC('P', 'I', 'M', '1'), fps, frame_size, is_color )
-			#self.writer = cv2.CreateVideoWriter("test3.mp4", cv2.CV_FOURCC('D', 'I', 'V', 'X'), fps, cv2.GetSize(frame), is_color )
-			#self.writer = cv2.CreateVideoWriter("test4.mpg", cv2.CV_FOURCC('P', 'I', 'M', '1'), fps, (320, 240), is_color )
-			
-			# These both gave no error message, but saved no file:
-			###self.writer = cv2.CreateVideoWriter("test5.h263i", cv2.CV_FOURCC('I', '2', '6', '3'), fps, cv2.GetSize(frame), is_color )
-			###self.writer = cv2.CreateVideoWriter("test6.fli",   cv2.CV_FOURCC('F', 'L', 'V', '1'), fps, cv2.GetSize(frame), is_color )
-			# Can't play this one:
-			###self.writer = cv2.CreateVideoWriter("test7.mp4",   cv2.CV_FOURCC('D', 'I', 'V', '3'), fps, cv2.GetSize(frame), is_color )
-
-		# 320x240 15fpx in DIVX is about 4 gigs per day.
-
-		frame = cv2.QueryFrame(self.capture)
-		cv2.NamedWindow("Target", 1)
-		#cv2.NamedWindow("Target2", 1)
-		
+		self.capture = cv2.VideoCapture(0)
+		self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+		self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+		self.capture.set(cv2.CAP_PROP_FPS, 30)
+		self.writer = None
+		cv2.imshow("Target", 1)		
 
 	def run(self):
 		# Initialize
-		#log_file_name = "tracker_output.log"
-		#log_file = file( log_file_name, 'a' )
 		
-		frame = cv2.QueryFrame( self.capture )
-		frame_size = cv2.GetSize( frame )
-		
-		# Capture the first frame from webcam for image properties
-		display_image = cv2.QueryFrame( self.capture )
-		
+		_, frame = self.capture.read()
+	
 		# Greyscale image, thresholded to create the motion mask:
-		grey_image = cv2.CreateImage( cv2.GetSize(frame), cv2.IPL_DEPTH_8U, 1 )
+		grey_image = np.zeros(frame.shape, np.uint8)
 		
 		# The RunningAvg() function requires a 32-bit or 64-bit image...
-		running_average_image = cv2.CreateImage( cv2.GetSize(frame), cv2.IPL_DEPTH_32F, 3 )
+		running_average_image = np.zeros(frame.shape, np.uint32)
 		# ...but the AbsDiff() function requires matching image depths:
 		running_average_in_display_color_depth = cv2.CloneImage( display_image )
 		
@@ -158,7 +112,6 @@ class Target:
 		# For toggling display:
 		image_list = [ "camera", "difference", "threshold", "display", "faces" ]
 		image_index = 0   # Index into image_list
-	
 	
 		# Prep for text drawing:
 		text_font = cv2.InitFont(cv2.CV_FONT_HERSHEY_COMPLEX, .5, .5, 0.0, 1, cv2.CV_AA )
@@ -511,6 +464,4 @@ class Target:
 		
 if __name__=="__main__":
 	t = Target()
-#	import cProfile
-#	cProfile.run( 't.run()' )
 	t.run()
