@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/root/base/anaconda4p2/bin/python3
 
 '''
 Multithreaded video processing sample.
